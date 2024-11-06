@@ -14,14 +14,6 @@ on:
         options:
           - apply
           - destroy
-      approval:
-        description: 'Approve to proceed'
-        required: true
-        default: 'no'
-        type: choice
-        options:
-          - yes
-          - no
 
 env:
   TF_WORKING_DIR: jenkins
@@ -67,18 +59,18 @@ jobs:
     #   working-directory: ${{ env.TF_WORKING_DIR }}
     #   run: terraform destroy -auto-approve
 
-    - name: Wait for Manual Approval
-      if: ${{ github.event.inputs.approval != 'yes' }}
-      run: |
-        echo "You must approve the deployment before proceeding."
-        exit 1
+    # - name: Wait for Manual Approval
+    #   if: ${{ github.event.inputs.approval != 'yes' }}
+    #   run: |
+    #     echo "You must approve the deployment before proceeding."
+    #     exit 1
 
     - name: Terraform Apply
-      if: ${{ github.event.inputs.action == 'apply' && github.event.inputs.approval == 'yes' }}
+      #if: ${{ github.event.inputs.action == 'apply' && github.event.inputs.approval == 'yes' }}
       working-directory: ${{ env.TF_WORKING_DIR }}
       run: terraform apply -input=false "tfplan"
 
     - name: Terraform Destroy
-      if: ${{ github.event.inputs.action == 'destroy' && github.event.inputs.approval == 'yes' }}
+      #if: ${{ github.event.inputs.action == 'destroy' && github.event.inputs.approval == 'yes' }}
       working-directory: ${{ env.TF_WORKING_DIR }}
       run: terraform destroy -auto-approve
