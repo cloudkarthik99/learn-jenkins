@@ -21,6 +21,7 @@ env:
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    environment: production
 
     permissions:
       id-token: write
@@ -43,35 +44,17 @@ jobs:
     - name: Terraform Plan
       working-directory: ${{ env.TF_WORKING_DIR }}
       run: terraform plan -input=false -out=tfplan
-
-    - name: Approval Required
-      if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply') }}
-      run: |
-        echo "Please approve to proceed with Apply."
-        while true; do
-          read -p "Type 'yes' to approve: " input
-          if [[ $input == "yes" ]]; then
-            break
-          fi
-        done
+      
+    - name: Await Approval for Apply or Destroy
+      if: ${{ github.event_name == 'push' || github.event.inputs.action == 'apply' || github.event.inputs.action == 'destroy' }}
+      run: echo "Please approve to proceed with ${GITHUB_EVENT.inputs.action}"
 
     - name: Terraform Apply
-      if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply') }}
+      if: ${{ github.event_name == 'push' || github.event.inputs.action == 'apply' }}
       working-directory: ${{ env.TF_WORKING_DIR }}
       run: terraform apply -input=false "tfplan"
-
-    - name: Approval Required for Destroy
-      if: ${{ github.event.inputs.action == 'destroy' }}
-      run: |
-        echo "Please approve to proceed with Destroy."
-        while true; do
-          read -p "Type 'yes' to approve: " input
-          if [[ $input == "yes" ]]; then
-            break
-          fi
-        done
 
     - name: Terraform Destroy
       if: ${{ github.event.inputs.action == 'destroy' }}
       working-directory: ${{ env.TF_WORKING_DIR }}
-      run: terraform destroy
+      run: terraform destroy -auto-approve
