@@ -15,6 +15,9 @@ on:
           - apply
           - destroy
 
+env:
+  TF_WORKING_DIR: jenkins
+
 jobs:
   terraform:
     runs-on: ubuntu-latest
@@ -34,9 +37,11 @@ jobs:
         aws-region: us-east-1
 
     - name: Initialize Terraform
+      working-directory: ${{ env.TF_WORKING_DIR }}
       run: terraform init
 
     - name: Terraform Plan
+      working-directory: ${{ env.TF_WORKING_DIR }}
       run: terraform plan -input=false -out=tfplan
 
     - name: Approval Required
@@ -52,6 +57,7 @@ jobs:
 
     - name: Terraform Apply
       if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply') }}
+      working-directory: ${{ env.TF_WORKING_DIR }}
       run: terraform apply -input=false "tfplan"
 
     - name: Approval Required for Destroy
@@ -67,4 +73,5 @@ jobs:
 
     - name: Terraform Destroy
       if: ${{ github.event.inputs.action == 'destroy' }}
+      working-directory: ${{ env.TF_WORKING_DIR }}
       run: terraform destroy
