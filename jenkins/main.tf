@@ -84,6 +84,61 @@ resource "aws_security_group" "jenkins_sg" {
   }
 }
 
+# Jenkins IAM Role for Instance Profile
+resource "aws_iam_role" "jenkins_role" {
+  name = "jenkins-instance-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+# Policy for Jenkins to Deploy Kubernetes or Other AWS Resources
+resource "aws_iam_policy" "jenkins_policy" {
+  name        = "jenkins-deployment-policy"
+  description = "Policy to allow Jenkins to deploy resources on AWS"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "ec2:*",
+          "eks:*",
+          "iam:PassRole",
+          "s3:*",
+          "autoscaling:*",
+          "cloudformation:*",
+          "elasticloadbalancing:*",
+          "logs:*",
+          "ssm:*"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# Attach Jenkins Deployment Policy to Role
+resource "aws_iam_role_policy_attachment" "jenkins_deployment_policy_attachment" {
+  role       = aws_iam_role.jenkins_instance_role.name
+  policy_arn = aws_iam_policy.jenkins_deployment_policy.arn
+}
+
+# Create Instance Profile for Jenkins EC2 Instance
+resource "aws_iam_instance_profile" "jenkins_instance_profile" {
+  name = "jenkins-instance-profile"
+  role = aws_iam_role.jenkins_instance_role.name
+}
+
 # EC2 Instance for Jenkins
 resource "aws_instance" "jenkins_instance" {
   ami                    = "ami-06b21ccaeff8cd686" # Amazon Linux 2 AMI
@@ -91,6 +146,7 @@ resource "aws_instance" "jenkins_instance" {
   subnet_id              = aws_subnet.jenkins_subnet.id
   vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
   key_name               = "jenkins-keypair"
+  iam_instance_profile = aws_iam_instance_profile.jenkins_instance_profile.name
 
   user_data = file("jenkins-user-data.sh")
 
