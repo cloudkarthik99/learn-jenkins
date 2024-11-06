@@ -14,6 +14,14 @@ on:
         options:
           - apply
           - destroy
+      approval:
+        description: 'Approve to proceed'
+        required: true
+        default: 'no'
+        type: choice
+        options:
+          - yes
+          - no
 
 env:
   TF_WORKING_DIR: jenkins
@@ -44,17 +52,33 @@ jobs:
     - name: Terraform Plan
       working-directory: ${{ env.TF_WORKING_DIR }}
       run: terraform plan -input=false -out=tfplan
-      
-    - name: Await Approval for Apply or Destroy
-      if: ${{ github.event_name == 'push' || github.event.inputs.action == 'apply' || github.event.inputs.action == 'destroy' }}
-      run: echo "Please approve to proceed with ${GITHUB_EVENT.inputs.action}"
+
+    # - name: Await Approval for Apply or Destroy
+    #   if: ${{ github.event_name == 'push' || github.event.inputs.action == 'apply' || github.event.inputs.action == 'destroy' }}
+    #   run: echo "Please approve to proceed with ${GITHUB_EVENT.inputs.action}"
+
+    # - name: Terraform Apply
+    #   if: ${{ github.event_name == 'push' || github.event.inputs.action == 'apply' }}
+    #   working-directory: ${{ env.TF_WORKING_DIR }}
+    #   run: terraform apply -input=false "tfplan"
+
+    # - name: Terraform Destroy
+    #   if: ${{ github.event.inputs.action == 'destroy' }}
+    #   working-directory: ${{ env.TF_WORKING_DIR }}
+    #   run: terraform destroy -auto-approve
+
+    - name: Wait for Manual Approval
+      if: ${{ github.event.inputs.approval != 'yes' }}
+      run: |
+        echo "You must approve the deployment before proceeding."
+        exit 1
 
     - name: Terraform Apply
-      if: ${{ github.event_name == 'push' || github.event.inputs.action == 'apply' }}
+      if: ${{ github.event.inputs.action == 'apply' && github.event.inputs.approval == 'yes' }}
       working-directory: ${{ env.TF_WORKING_DIR }}
       run: terraform apply -input=false "tfplan"
 
     - name: Terraform Destroy
-      if: ${{ github.event.inputs.action == 'destroy' }}
+      if: ${{ github.event.inputs.action == 'destroy' && github.event.inputs.approval == 'yes' }}
       working-directory: ${{ env.TF_WORKING_DIR }}
       run: terraform destroy -auto-approve
