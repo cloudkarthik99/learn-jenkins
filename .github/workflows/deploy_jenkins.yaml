@@ -4,24 +4,15 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
-    inputs:
-      action:
-        description: 'Action to perform'
-        required: true
-        default: 'apply'
-        type: choice
-        options:
-          - apply
-          - destroy
-
-env:
-  TF_WORKING_DIR: jenkins
+  pull_request:
+    branches:
+      - main
+# env:
+#   TF_WORKING_DIR: jenkins
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
-    environment: production
 
     permissions:
       id-token: write
@@ -38,12 +29,35 @@ jobs:
         aws-region: us-east-1
 
     - name: Initialize Terraform
-      working-directory: ${{ env.TF_WORKING_DIR }}
-      run: terraform init
+      run: |
+        cd jenkins
+        terraform fmt
+        terraform init
 
     - name: Terraform Plan
-      working-directory: ${{ env.TF_WORKING_DIR }}
-      run: terraform plan -input=false -out=tfplan
+      run: |
+        cd jenkins
+        terraform plan -input=false -out=tfplan
+      
+    - name: Wait for Manual Approval
+      if: success()
+      id: approval
+      uses: trstringer/manual-approval@v1
+      with:
+        secret: ${{ github.TOKEN }}
+        approvers: cloudkarthik99  # Replace with your GitHub username to approve the job
+
+    - name: Terraform Apply
+      if: ${{ steps.approval.outputs.approved == 'true' }}
+      run: |
+        cd jenkins
+        terraform apply -input=false "tfplan"
+
+    # - name: Upload tfplan artifact
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: tfplan
+    #     path: tfplan
 
     # - name: Await Approval for Apply or Destroy
     #   if: ${{ github.event_name == 'push' || github.event.inputs.action == 'apply' || github.event.inputs.action == 'destroy' }}
@@ -65,12 +79,12 @@ jobs:
     #     echo "You must approve the deployment before proceeding."
     #     exit 1
 
-    - name: Terraform Apply
-      #if: ${{ github.event.inputs.action == 'apply' && github.event.inputs.approval == 'yes' }}
-      working-directory: ${{ env.TF_WORKING_DIR }}
-      run: terraform apply -input=false "tfplan"
+    # - name: Terraform Apply
+    #   #if: ${{ github.event.inputs.action == 'apply' && github.event.inputs.approval == 'yes' }}
+    #   working-directory: ${{ env.TF_WORKING_DIR }}
+    #   run: terraform apply -input=false "tfplan"
 
-    - name: Terraform Destroy
-      #if: ${{ github.event.inputs.action == 'destroy' && github.event.inputs.approval == 'yes' }}
-      working-directory: ${{ env.TF_WORKING_DIR }}
-      run: terraform destroy -auto-approve
+    # - name: Terraform Destroy
+    #   #if: ${{ github.event.inputs.action == 'destroy' && github.event.inputs.approval == 'yes' }}
+    #   working-directory: ${{ env.TF_WORKING_DIR }}
+    #   run: terraform destroy -auto-approve
