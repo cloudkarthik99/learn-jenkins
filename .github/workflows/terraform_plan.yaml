@@ -1,0 +1,46 @@
+name: Terraform plan to Deploy Jenkins on EC2
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+# env:
+#   TF_WORKING_DIR: jenkins
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        aws-region: us-east-1
+
+    - name: Initialize Terraform
+      run: |
+        cd jenkins
+        terraform fmt
+        terraform init
+
+    - name: Terraform Plan
+      run: |
+        cd jenkins
+        terraform plan -input=false -out=tfplan
+      
+    - name: Save Plan Output
+      uses: actions/upload-artifact@v3
+      with:
+        name: tfplan
+        path: tfplan

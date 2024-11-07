@@ -1,0 +1,33 @@
+name: Terraform Destroy to Destroy Jenkins on EC2
+
+on:
+  workflow_dispatch:
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        aws-region: us-east-1
+
+    - name: Initialize Terraform
+      run: |
+        cd jenkins
+        terraform fmt
+        terraform init
+
+    - name: Terraform Destroy
+      run: |
+        cd jenkins
+        terraform destroy -auto-approve
