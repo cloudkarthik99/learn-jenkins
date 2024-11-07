@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 env:
   S3_BUCKET: github-actions-terraform-plan  # Replace with your S3 bucket name
