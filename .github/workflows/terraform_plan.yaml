@@ -7,8 +7,6 @@ on:
   pull_request:
     branches:
       - main
-# env:
-#   TF_WORKING_DIR: jenkins
 
 jobs:
   terraform:
@@ -43,4 +41,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: tfplan
-        path: tfplan
+        path: jenkins/tfplan
