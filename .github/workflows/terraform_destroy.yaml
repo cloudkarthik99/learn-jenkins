@@ -1,4 +1,4 @@
-name: Terraform Destroy to Destroy Jenkins on EC2
+name: Terraform Destroy
 
 on:
   workflow_dispatch:

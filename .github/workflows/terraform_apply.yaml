@@ -1,7 +1,13 @@
-name: Terraform Apply to Deploy Jenkins on EC2
+name: Terraform Apply
+
+# on:
+#   workflow_dispatch:
 
 on:
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["Terraform Plan"]
+    types:
+      - completed
 
 jobs:
   terraform:

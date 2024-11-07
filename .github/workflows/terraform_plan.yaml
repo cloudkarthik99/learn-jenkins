@@ -1,4 +1,4 @@
-name: Terraform plan to Deploy Jenkins on EC2
+name: Terraform plan
 
 on:
   push:
