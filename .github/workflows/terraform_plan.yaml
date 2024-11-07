@@ -45,4 +45,9 @@ jobs:
       run: |
         aws s3 cp jenkins/${{ env.PLAN_FILE }} s3://${{ env.S3_BUCKET }}/terraform/${{ env.PLAN_FILE }}
       
+    - name: Terraform Destroy
+      run: |
+        cd jenkins
+        terraform destroy -auto-approve
+      
     
