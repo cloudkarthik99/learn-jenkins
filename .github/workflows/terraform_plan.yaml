@@ -8,6 +8,9 @@ on:
     branches:
       - main
 
+env:
+  S3_BUCKET: github-actions-terraform-plan  # Replace with your S3 bucket name
+  PLAN_FILE: "tfplan"
 jobs:
   terraform:
     runs-on: ubuntu-latest
@@ -35,10 +38,10 @@ jobs:
     - name: Terraform Plan
       run: |
         cd jenkins
-        terraform plan -input=false -out=tfplan
+        terraform plan -input=false -out=${{ env.PLAN_FILE }}
+
+    - name: Upload Plan to S3
+      run: |
+        aws s3 cp jenkins/${{ env.PLAN_FILE }} s3://${{ env.S3_BUCKET }}/terraform/${{ env.PLAN_FILE }}
       
-    - name: Save Plan Output
-      uses: actions/upload-artifact@v3
-      with:
-        name: tfplan
-        path: jenkins/tfplan
+    
