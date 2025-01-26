@@ -1,0 +1,76 @@
+name: Terraform Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Select Terraform action"
+        required: true
+        default: "apply"
+        type: choice
+        options:
+          - apply
+          - destroy
+      cloud_provider:
+        description: "select Cloud Provider"
+        required: true
+        default: "jenkins"
+        type: choice
+        options:
+          - aws-terraform
+          - jenkins
+env:
+  S3_BUCKET: github-actions-terraform-plan  # Replace with your S3 bucket name
+  PLAN_FILE: "tfplan"
+jobs:
+  setup:
+    name: Run common setup
+    uses: ./.github/workflows/setup-workflow.yml
+    with:
+      cloud_providers: ${{ github.event.inputs.cloud_provider }}
+      
+  terraform-init:
+    name: Terraform Init
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Initialize Terraform
+        run: |
+          cd ${{ env.WORKING_DIR }}
+          terraform init
+          
+  terraform-plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    needs: terraform-init
+    steps:
+      - name: Terraform Plan
+        run: |
+          cd ${{ env.WORKING_DIR }}
+          terraform plan -input=false -out=${{ env.PLAN_FILE }}
+          
+      - name: Upload Plan to S3
+        run: |
+          aws s3 cp jenkins/${{ env.PLAN_FILE }} s3://${{ env.S3_BUCKET }}/terraform/${{ env.PLAN_FILE }}
+          
+  apply_or_destroy:
+    name: Terraform Apply or Destroy
+    runs-on: ubuntu-latest
+    needs: terraform-plan
+    environment: production
+
+    steps:
+      - name: Apply or Destroy
+        run: |
+          cd ${{ env.WORKING_DIR }}
+          if [ "${{ github.event.inputs.action }}" == "apply" ]; then
+            terraform apply --input=false "${{ env.PLAN_FILE }}"
+          elif [ "${{ github.event.inputs.action }}" == "destroy" ]; then
+            terraform destroy -auto-approve
+          fi
