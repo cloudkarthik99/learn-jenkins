@@ -33,7 +33,7 @@ jobs:
     name: Run common setup
     uses: ./.github/workflows/setup_workflow.yaml
     with:
-      cloud_providers: ${{ github.event.inputs.cloud_provider }}
+      cloud_provider: ${{ github.event.inputs.cloud_provider }}
       
   terraform-init:
     name: Terraform Init
