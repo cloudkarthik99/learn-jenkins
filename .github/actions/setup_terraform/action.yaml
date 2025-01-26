@@ -23,4 +23,5 @@ runs:
       uses: hashicorp/setup-terraform@v3
 
     - name: Set Working Directory
+      shell: bash
       run: echo "WORKING_DIR=${{ inputs.cloud_provider }}" >> $GITHUB_ENV
