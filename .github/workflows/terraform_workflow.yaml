@@ -56,7 +56,7 @@ jobs:
           
       - name: Upload Plan to S3
         run: |
-          aws s3 cp jenkins/${{ env.PLAN_FILE }} s3://${{ env.S3_BUCKET }}/terraform/${{ env.PLAN_FILE }}
+          aws s3 cp ${{ env.WORKING_DIR }}/${{ env.PLAN_FILE }} s3://${{ env.S3_BUCKET }}/terraform/${{ env.PLAN_FILE }}
           
   apply_or_destroy:
     name: Terraform Apply or Destroy
@@ -72,6 +72,10 @@ jobs:
         with:
           cloud_provider: ${{ github.event.inputs.cloud_provider }}
           role_to_assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+
+      - name: Download Plan from S3
+        run: |
+          aws s3 cp s3://${{ env.S3_BUCKET }}/terraform/${{ env.PLAN_FILE }} ${{ env.WORKING_DIR }}/${{ env.PLAN_FILE }}
           
       - name: Apply or Destroy
         run: |
