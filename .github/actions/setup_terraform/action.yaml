@@ -26,3 +26,9 @@ runs:
     - name: Set Working Directory
       shell: bash
       run: echo 'WORKING_DIR=${{ inputs.cloud_provider }}' >> $GITHUB_ENV
+      
+    - name: Initialize Terraform
+      shell: bash
+      run: |
+        cd ${{ env.WORKING_DIR }}
+        terraform init
