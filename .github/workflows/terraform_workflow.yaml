@@ -33,18 +33,15 @@ permissions:
   id-token: write
   contents: read
   
-jobs:
-  # setup:
-  #   name: Run common setup
-  #   uses: ./.github/workflows/setup_workflow.yaml
-  #   secrets: inherit
-  #   with:
-  #     cloud_provider: ${{ github.event.inputs.cloud_provider }}
-      
+jobs: 
   terraform-init:
     name: Terraform Init
     runs-on: ubuntu-latest
     steps:
+      # This step checks out a copy of your repository.
+      - name: My first step - check out repository
+        uses: actions/checkout@v4
+        
       - name: Setup Terraform
         uses: ./.github/actions/setup_terraform
         with:
@@ -60,6 +57,10 @@ jobs:
     name: Terraform Plan
     runs-on: ubuntu-latest
     steps:
+      # This step checks out a copy of your repository.
+      - name: My first step - check out repository
+        uses: actions/checkout@v4
+        
       - name: Setup Terraform
         uses: ./.github/actions/setup_terraform
         with:
@@ -80,6 +81,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
+      # This step checks out a copy of your repository.
+      - name: My first step - check out repository
+        uses: actions/checkout@v4
+        
       - name: Setup Terraform
         uses: ./.github/actions/setup_terraform
         with:
