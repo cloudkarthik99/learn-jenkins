@@ -31,6 +31,7 @@ jobs:
         aws s3 cp s3://${{ env.S3_BUCKET }}/terraform/${{ env.PLAN_FILE }} jenkins/${{ env.PLAN_FILE }}
 
     - name: Initialize Terraform
+      uses: hashicorp/setup-terraform@v2
       run: |
         cd jenkins
         terraform init
