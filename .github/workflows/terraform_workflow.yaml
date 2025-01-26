@@ -34,24 +34,6 @@ permissions:
   contents: read
   
 jobs: 
-  terraform-init:
-    name: Terraform Init
-    runs-on: ubuntu-latest
-    steps:
-      # This step checks out a copy of your repository.
-      - name: My first step - check out repository
-        uses: actions/checkout@v4
-        
-      - name: Setup Terraform
-        uses: ./.github/actions/setup_terraform
-        with:
-          cloud_provider: ${{ github.event.inputs.cloud_provider }}
-          role_to_assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          
-      - name: Initialize Terraform
-        run: |
-          cd ${{ env.WORKING_DIR }}
-          terraform init
           
   terraform-plan:
     name: Terraform Plan
