@@ -2,10 +2,11 @@ name: Setup Terraform
 description: Installs terraform and Configure AWS
 inputs:
   cloud_provider:
-    description: "The folder to use for Terraform"
+    description: 'The folder to use for Terraform'
     required: true
+    default: 'jenkins'
   role_to_assume:
-    description: "Role to use for AWS configure"
+    description: 'Role to use for AWS configure'
     required: true
 runs:
   using: "composite"
@@ -24,4 +25,4 @@ runs:
 
     - name: Set Working Directory
       shell: bash
-      run: echo "WORKING_DIR=${{ inputs.cloud_provider }}" >> $GITHUB_ENV
+      run: echo 'WORKING_DIR=${{ inputs.cloud_provider }}' >> $GITHUB_ENV
