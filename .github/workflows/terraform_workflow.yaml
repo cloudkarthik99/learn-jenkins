@@ -31,7 +31,7 @@ env:
 jobs:
   setup:
     name: Run common setup
-    uses: .github/workflows/setup_workflow.yml@main
+    uses: ./.github/workflows/setup_workflow.yaml
     with:
       cloud_providers: ${{ github.event.inputs.cloud_provider }}
       
