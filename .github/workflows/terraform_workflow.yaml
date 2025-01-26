@@ -28,6 +28,11 @@ on:
 env:
   S3_BUCKET: github-actions-terraform-plan  # Replace with your S3 bucket name
   PLAN_FILE: "tfplan"
+  
+permissions:
+  id-token: write
+  contents: read
+  
 jobs:
   setup:
     name: Run common setup
