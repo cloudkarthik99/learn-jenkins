@@ -10,6 +10,7 @@ env:
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    environment: production
 
     permissions:
       id-token: write
