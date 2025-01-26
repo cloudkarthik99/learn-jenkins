@@ -1,0 +1,26 @@
+name: Setup Terraform
+description: Installs terraform and Configure AWS
+inputs:
+  cloud_provider:
+    description: "The folder to use for Terraform"
+    required: true
+  role_to_assume:
+    description: "Role to use for AWS configure"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ inputs.role_to_assume }}
+        aws-region: us-east-1
+
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@v3
+
+    - name: Set Working Directory
+      run: echo "WORKING_DIR=${{ inputs.cloud_provider }}" >> $GITHUB_ENV
