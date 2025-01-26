@@ -37,6 +37,7 @@ jobs:
   setup:
     name: Run common setup
     uses: ./.github/workflows/setup_workflow.yaml
+    secrets: inherit
     with:
       cloud_provider: ${{ github.event.inputs.cloud_provider }}
       
