@@ -11,9 +11,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
-
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
@@ -26,10 +23,3 @@ runs:
     - name: Set Working Directory
       shell: bash
       run: echo 'WORKING_DIR=${{ inputs.cloud_provider || 'jenkins' }}' >> $GITHUB_ENV
-      
-    - name: Initialize Terraform
-      shell: bash
-      run: |
-        cd ${{ env.WORKING_DIR }}
-        terraform init
-        terraform workspace select  ${{ env.WORKING_DIR }} || terraform workspace new ${{ env.WORKING_DIR }}
