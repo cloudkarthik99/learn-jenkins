@@ -101,7 +101,7 @@ jobs:
           
       - name: Download Plan from S3
         run: |
-          aws s3 cp s3://${{ env.S3_BUCKET }}/terraform/${{ env.S3_BUCKET_PREFIX }}/${{ env.PLAN_FILE }} ${{ env.WORKING_DIR }}/${{ env.PLAN_FILE }}
+          aws s3 cp s3://${{ env.S3_BUCKET }}/terraform//${{ env.PLAN_FILE }} ${{ env.WORKING_DIR }}/${{ env.PLAN_FILE }}
 
       - name: Destroy
         run: |
