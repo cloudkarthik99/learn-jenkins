@@ -28,6 +28,7 @@ on:
 env:
   S3_BUCKET: github-actions-terraform-plan  # Replace with your S3 bucket name
   PLAN_FILE: "tfplan"
+  ACTION: apply  # Default for automatic trigger
   
 permissions:
   id-token: write
@@ -35,7 +36,7 @@ permissions:
   
 jobs: 
   terraform-plan:
-    if: github.event.inputs.action == 'apply'
+    if: ${{ github.event.inputs.action == 'apply' || env.ACTION == 'apply' }}
     name: Terraform Plan
     runs-on: ubuntu-latest
     steps:
@@ -59,7 +60,7 @@ jobs:
           aws s3 cp ${{ env.WORKING_DIR }}/${{ env.PLAN_FILE }} s3://${{ env.S3_BUCKET }}/terraform/${{ env.PLAN_FILE }}
           
   apply:
-    if: github.event.inputs.action == 'apply'
+    if: ${{ github.event.inputs.action == 'apply' || env.ACTION == 'apply' }} 
     name: Terraform Apply
     runs-on: ubuntu-latest
     environment: production
