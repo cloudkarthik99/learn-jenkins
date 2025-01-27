@@ -27,15 +27,15 @@ on:
           - jenkins
 env:
   S3_BUCKET: github-actions-terraform-plan  # Replace with your S3 bucket name
-  S3_BUCKET_PREFIX: ${{ github.event.inputs.cloud_provider }}
   PLAN_FILE: "tfplan"
+  DESTROY_PLAN_FILE: "destroytfplan"
   
 permissions:
   id-token: write
   contents: read
   
 jobs: 
-  terraform-plan:
+  terraform-apply-plan:
     if: ${{ github.event.inputs.action == 'apply' || github.event_name == 'push' || github.event_name == 'pull_request' }}
     name: Terraform Plan
     runs-on: ubuntu-latest
@@ -59,7 +59,7 @@ jobs:
         run: |
           aws s3 cp ${{ env.WORKING_DIR }}/${{ env.PLAN_FILE }} s3://${{ env.S3_BUCKET }}/terraform/${{ env.S3_BUCKET_PREFIX }}/${{ env.PLAN_FILE }}
           
-  apply:
+  terraform-apply:
     if: ${{ github.event.inputs.action == 'apply' || github.event_name == 'push' || github.event_name == 'pull_request' }} 
     name: Terraform Apply
     runs-on: ubuntu-latest
@@ -83,7 +83,32 @@ jobs:
         run: |
           cd ${{ env.WORKING_DIR }}
           terraform apply --input=false "${{ env.PLAN_FILE }}"
-  destroy:
+          
+  terraform-destroy-plan:
+    if: ${{ github.event.inputs.action == 'destroy' }}
+    name: Terraform Destroy Plan
+    runs-on: ubuntu-latest
+    steps:
+      # This step checks out a copy of your repository.
+      - name: My first step - check out repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Terraform
+        uses: ./.github/actions/setup_terraform
+        with:
+          cloud_provider: ${{ github.event.inputs.cloud_provider }}
+          role_to_assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          
+      - name: Terraform Destroy Plan
+        run: |
+          cd ${{ env.WORKING_DIR }}
+          terraform plan -destroy -input=false -out=${{ env.DESTROY_PLAN_FILE }}
+          
+      - name: Upload Plan to S3
+        run: |
+          aws s3 cp ${{ env.WORKING_DIR }}/${{ env.DESTROY_PLAN_FILE }} s3://${{ env.S3_BUCKET }}/${{ env.WORKING_DIR }}/${{ env.DESTROY_PLAN_FILE }}
+          
+  terraform-destroy:
     if: github.event.inputs.action == 'destroy'
     name: Terraform Destroy
     runs-on: ubuntu-latest
@@ -101,10 +126,10 @@ jobs:
           
       - name: Download Plan from S3
         run: |
-          aws s3 cp s3://${{ env.S3_BUCKET }}/terraform//${{ env.PLAN_FILE }} ${{ env.WORKING_DIR }}/${{ env.PLAN_FILE }}
+          aws s3 cp s3://${{ env.S3_BUCKET }}/${{ env.WORKING_DIR }}/${{ env.DESTROY_PLAN_FILE }} ${{ env.WORKING_DIR }}/${{ env.DESTROY_PLAN_FILE }}
 
       - name: Destroy
         run: |
           cd ${{ env.WORKING_DIR }}
-          terraform apply -destroy -input=false "${{ env.PLAN_FILE }}"
+          terraform apply -destroy -input=false "${{ env.DESTROY_PLAN_FILE }}"
     
