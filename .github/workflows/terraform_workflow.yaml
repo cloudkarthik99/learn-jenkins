@@ -84,7 +84,7 @@ jobs:
         run: |
           cd ${{ env.WORKING_DIR }}
           terraform init
-          terraform workspace select ${{ env.WORKING_DIR }}
+          terraform workspace select ${{ env.WORKING_DIR }} || terraform workspace new ${{ env.WORKING_DIR }}
           terraform apply --input=false "${{ env.PLAN_FILE }}"
           
   terraform-destroy:
@@ -107,5 +107,5 @@ jobs:
         run: |
           cd ${{ env.WORKING_DIR }}
           terraform init
-          terraform workspace select ${{ env.WORKING_DIR }}
+          terraform workspace select ${{ env.WORKING_DIR }} || terraform workspace new ${{ env.WORKING_DIR }}
           terraform destroy -auto-approve
