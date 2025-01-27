@@ -55,6 +55,7 @@ jobs:
           cd ${{ env.WORKING_DIR }}
           terraform init
           terraform workspace select ${{ env.WORKING_DIR }} || terraform workspace new ${{ env.WORKING_DIR }}
+          terraform state list || echo "No state found"
           terraform plan -input=false -out=${{ env.PLAN_FILE }}
           
       - name: Upload Plan to S3
@@ -87,13 +88,14 @@ jobs:
           cd ${{ env.WORKING_DIR }}
           terraform init
           terraform workspace select ${{ env.WORKING_DIR }} || terraform workspace new ${{ env.WORKING_DIR }}
+          terraform state list || echo "No state found"
           terraform apply --input=false "${{ env.PLAN_FILE }}"
+          terraform state list
           
   terraform-destroy-plan:
     if: github.event.inputs.action == 'destroy'
     name: Terraform Destroy Plan
     runs-on: ubuntu-latest
-    environment: production
     steps:
       # This step checks out a copy of your repository.
       - name: check out repository
@@ -110,6 +112,7 @@ jobs:
           cd ${{ env.WORKING_DIR }}
           terraform init
           terraform workspace select ${{ env.WORKING_DIR }} || terraform workspace new ${{ env.WORKING_DIR }}
+          terraform state list || echo "No state found"
           terraform plan -destroy -input=false -out=${{ env.DESTROY_PLAN_FILE }}
           
       - name: Upload Plan to S3
@@ -142,4 +145,6 @@ jobs:
           cd ${{ env.WORKING_DIR }}
           terraform init
           terraform workspace select ${{ env.WORKING_DIR }} || terraform workspace new ${{ env.WORKING_DIR }}
+          terraform state list || echo "No state found"
           terraform apply -input=false "${{ env.DESTROY_PLAN_FILE }}"
+          terraform state list || echo "No state found"
