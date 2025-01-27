@@ -32,3 +32,4 @@ runs:
       run: |
         cd ${{ env.WORKING_DIR }}
         terraform init
+        terraform workspace select  ${{ env.WORKING_DIR }} | terraform workspace new ${{ env.WORKING_DIR }}
