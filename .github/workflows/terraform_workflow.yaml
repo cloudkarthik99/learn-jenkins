@@ -34,8 +34,8 @@ permissions:
   contents: read
   
 jobs: 
-          
   terraform-plan:
+    if: github.event.inputs.action == "apply"
     name: Terraform Plan
     runs-on: ubuntu-latest
     steps:
@@ -58,8 +58,9 @@ jobs:
         run: |
           aws s3 cp ${{ env.WORKING_DIR }}/${{ env.PLAN_FILE }} s3://${{ env.S3_BUCKET }}/terraform/${{ env.PLAN_FILE }}
           
-  apply_or_destroy:
-    name: Terraform Apply or Destroy
+  apply:
+    if: github.event.inputs.action == "apply"
+    name: Terraform Apply
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -77,11 +78,28 @@ jobs:
         run: |
           aws s3 cp s3://${{ env.S3_BUCKET }}/terraform/${{ env.PLAN_FILE }} ${{ env.WORKING_DIR }}/${{ env.PLAN_FILE }}
           
-      - name: Apply or Destroy
+      - name: Apply
         run: |
           cd ${{ env.WORKING_DIR }}
-          if [ "${{ github.event.inputs.action }}" == "apply" ]; then
-            terraform apply --input=false "${{ env.PLAN_FILE }}"
-          elif [ "${{ github.event.inputs.action }}" == "destroy" ]; then
-            terraform destroy -auto-approve
-          fi
+          terraform apply --input=false "${{ env.PLAN_FILE }}"
+  destroy:
+    if: github.event.inputs.action == "destroy"
+    name: Terraform Destroy
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      # This step checks out a copy of your repository.
+      - name: My first step - check out repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Terraform
+        uses: ./.github/actions/setup_terraform
+        with:
+          cloud_provider: ${{ github.event.inputs.cloud_provider }}
+          role_to_assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+
+      - name: Destroy
+        run: |
+          cd ${{ env.WORKING_DIR }}
+          terraform destroy -auto-approve
+    
