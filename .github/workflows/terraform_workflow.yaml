@@ -57,7 +57,7 @@ jobs:
           
       - name: Upload Plan to S3
         run: |
-          aws s3 cp ${{ env.WORKING_DIR }}/${{ env.PLAN_FILE }} s3://${{ env.S3_BUCKET }}/terraform/${{ env.S3_BUCKET_PREFIX }}/${{ env.PLAN_FILE }}
+          aws s3 cp ${{ env.WORKING_DIR }}/${{ env.PLAN_FILE }} s3://${{ env.S3_BUCKET }}/${{ env.WORKING_DIR }}/${{ env.PLAN_FILE }}
           
   terraform-apply:
     if: ${{ github.event.inputs.action == 'apply' || github.event_name == 'push' || github.event_name == 'pull_request' }} 
@@ -77,7 +77,7 @@ jobs:
 
       - name: Download Plan from S3
         run: |
-          aws s3 cp s3://${{ env.S3_BUCKET }}/terraform/${{ env.S3_BUCKET_PREFIX }}/${{ env.PLAN_FILE }} ${{ env.WORKING_DIR }}/${{ env.PLAN_FILE }}
+          aws s3 cp s3://${{ env.S3_BUCKET }}/${{ env.WORKING_DIR }}/${{ env.PLAN_FILE }} ${{ env.WORKING_DIR }}/${{ env.PLAN_FILE }}
           
       - name: Apply
         run: |
