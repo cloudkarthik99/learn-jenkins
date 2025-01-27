@@ -35,7 +35,7 @@ permissions:
   
 jobs: 
   terraform-plan:
-    if: github.event.inputs.action == "apply"
+    if: github.event.inputs.action == 'apply'
     name: Terraform Plan
     runs-on: ubuntu-latest
     steps:
@@ -59,7 +59,7 @@ jobs:
           aws s3 cp ${{ env.WORKING_DIR }}/${{ env.PLAN_FILE }} s3://${{ env.S3_BUCKET }}/terraform/${{ env.PLAN_FILE }}
           
   apply:
-    if: github.event.inputs.action == "apply"
+    if: github.event.inputs.action == 'apply'
     name: Terraform Apply
     runs-on: ubuntu-latest
     environment: production
@@ -83,7 +83,7 @@ jobs:
           cd ${{ env.WORKING_DIR }}
           terraform apply --input=false "${{ env.PLAN_FILE }}"
   destroy:
-    if: github.event.inputs.action == "destroy"
+    if: github.event.inputs.action == 'destroy'
     name: Terraform Destroy
     runs-on: ubuntu-latest
     environment: production
