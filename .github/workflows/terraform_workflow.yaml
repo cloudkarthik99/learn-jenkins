@@ -26,7 +26,7 @@ on:
           - aws-terraform
           - jenkins
 env:
-  S3_BUCKET: github-actions-terraform-plan  # Replace with your S3 bucket name
+  S3_BUCKET: terraform-plan-bucket-for-cicd  # Replace with your S3 bucket name
   PLAN_FILE: "tfplan"
   DESTROY_PLAN_FILE: "destroytfplan"
   
